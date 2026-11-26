@@ -2,9 +2,16 @@
 
 import argparse
 import sys
+from datetime import date
 
 from odev_takip import depo
+from odev_takip.listeleme import liste_satirlari
 from odev_takip.odev import OdevHatasi, odev_metni, odev_olustur
+
+
+def bugun():
+    """Bugünün tarihi (testlerde değiştirilebilsin diye ayrı fonksiyon)."""
+    return date.today()
 
 
 def _ekle(args, yol):
@@ -13,6 +20,15 @@ def _ekle(args, yol):
     odevler.append(odev)
     depo.kaydet(yol, odevler)
     print(f"Eklendi: {odev_metni(odev)}")
+
+
+def _listele(args, yol):
+    odevler = depo.yukle(yol)
+    if not odevler:
+        print("Kayıtlı ödev yok.")
+        return
+    for satir in liste_satirlari(odevler, bugun()):
+        print(satir)
 
 
 def parser_olustur():
@@ -36,6 +52,11 @@ def parser_olustur():
     ekle.add_argument("--baslik", required=True, help="ödevin başlığı")
     ekle.add_argument("--teslim", required=True, help="teslim tarihi (YYYY-AA-GG)")
     ekle.set_defaults(islem=_ekle)
+
+    listele = alt.add_parser(
+        "listele", parents=[ortak], help="ödevleri teslim tarihine göre listele"
+    )
+    listele.set_defaults(islem=_listele)
     return parser
 
 
